@@ -39,3 +39,5 @@ nosetests.xml
 *.log
 *.out
 *.toc
+*.pdf
+*.synctex.gz
