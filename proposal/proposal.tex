@@ -2,6 +2,9 @@
 % don't indent first line of paragraphs. needed for letter of transmittal.
 \usepackage[parfill]{parskip}  
 \usepackage{hyperref}  % For email and citation links
+% Next two lines are for dotted lines in table of contents
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 \title{Schedule++ Proposal}
 \author{Jacob Naviasky, Maxime Serrano, Chris Williamson, Joshua Zimmerman}
 \begin{document}
