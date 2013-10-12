@@ -1,10 +1,15 @@
 \documentclass{article}
+% don't indent first line of paragraphs. needed for letter of transmittal.
+\usepackage[parfill]{parskip}  
+\usepackage{hyperref}  % For email and citation links
 \title{Schedule++ Proposal}
 \author{Jacob Naviasky, Maxime Serrano, Chris Williamson, Joshua Zimmerman}
 \begin{document}
 \include{letter_of_transmittal}
+\thispagestyle{empty}
 \maketitle
 \include{abstract}
+\thispagestyle{empty}
 \tableofcontents
 \include{introduction}
 \include{plan}
