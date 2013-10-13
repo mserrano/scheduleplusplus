@@ -41,3 +41,5 @@ nosetests.xml
 *.toc
 *.pdf
 *.synctex.gz
+*.bbl
+*.blg
