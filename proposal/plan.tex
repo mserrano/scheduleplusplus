@@ -21,3 +21,21 @@ as to keep each other up to date on work that has been done during the week. We 
 use Internet Relay Chat to communicate outside of these meetings, and use Git to
 keep track of our software's versions as well as distribute code and documents within
 the group.
+
+\subsection{Literature Review}
+
+Before preparing this proposal, our group reviewed some of the existing literature in projects of this form.
+A list of the useful sources found can be found in the last section of this document.
+
+The most valuable document we found during our research was Kolen et al's paper\textsuperscript{7} 
+surveying common solutions to the interval scheduling problem. Kolen et al first describe 
+various formulations of the interval scheduling problem, including the one we plan to solve. The 
+interval scheduling problem they describe is as follows: we have a list of jobs, in the form of a 
+start and end time, and a list of machines, each of which can do at most one job at a time. Each 
+job has a given profit (or, equivalently, cost) associated with it, and the goal is to assign jobs to 
+machines in a way that maximizes profit or minimizes cost. Kolen et al describe a variety of 
+algorithms solving slight alterations of this problem, ranging from dynamic programming 
+algorithms to more standard greedy solutions. They prove their correctness and speed, and 
+motivate the study of these algorithms by providing real-world instances where the appropriate 
+variants of the interval scheduling problem appear. They then extend the problem to a more 
+complex version, allowing for the possibility of multi-semester scheduling. 
