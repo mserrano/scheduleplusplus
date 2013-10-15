@@ -8,7 +8,7 @@ def extract_course(link):
     return None
   nm = link.string
   if rnum.match(nm):
-    return str(int(nm))
+    return nm
   return None
 
 def get_classes(dpt):
@@ -42,7 +42,7 @@ def get_details(c):
       for d in cells[2].descendants:
         x = d.string.strip()
         if len(x) > 0:
-          units = int(float(x))
+          units = x
           break
     cells = [cell for cell in cells if cell.string is not None]
     if len(cells) < 8:
@@ -55,7 +55,10 @@ def get_details(c):
       sec = sec.strip()
       if 'Lec' in sec:
         # whee lecture
-        lecture = int(sec[4:].strip())
+        if 'Mini' not in sec:
+          lecture = str(int(sec[4:].strip()))
+        else:
+          lecture = str(int(sec[sec.index('Lec') + 4:].strip()))
         pr = str(cells[-1].string.strip().replace('\r\n', ';'))
         while ' ,' in pr:
           pr = pr.replace(' ,', ',')
@@ -114,32 +117,64 @@ def get_details(c):
     coreqs = coreqs.replace('  ', ' ')
   return title, units, description, prereqs, coreqs, sc
 
-def fmt(num, (title, units, desc, pre, co, sc)):
-  print num, title, "(%s units)" % str(units)
-  if len(desc) > 0:
-    print desc
-  else:
-    print "No description."
-  print "Prerequisites:", pre
-  print "Corequisites:", co
-  for lecture in sc:
-    if lecture != 0:
-      data = sc[lecture][0]
-      professors = data[0]
-      room = data[1]
-      days = data[2]
-      time = data[3]
-      print "Lecture %s\n\t%s\n\t%s\n\t%s\n\t%s" % (str(lecture), professors, room, days, time)
-    for recitation in sc[lecture][1]:
-      data = sc[lecture][1][recitation]
-      TA = data[0]
-      room = data[1]
-      day = data[2]
-      time = data[3]
-      print "\tSection %s\n\t\t%s\n\t\t%s\n\t\t%s\n\t\t%s" % (recitation, TA, room, day, time)
-  return None
+def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
-# grab all the math classes for testing purposes
-cl = get_classes("MSC")
-for c in cl:
-  fmt(c, get_details(c))
+def fmt(dept, num, (title, units, desc, pre, co, sc)):
+  num = str(num).replace("'", "''")
+  name = title.replace("'", "''")
+  units = str(units).replace("'", "''")
+  description = desc.replace("'", "''")
+  pre = pre.replace("'", "''")
+  co = co.replace("'", "''")
+  s = "INSERT INTO classes (num, dept, name, units, description, prereqs, coreqs) VALUES('"
+  s = s + num + "', '" + dept + "', '" + name + "', '" + units + "', '" + description + "', '" + pre + "', '" + co + "');"
+  print removeNonAscii(s)
+  for lecture in sc:
+    lec = False
+    rlec = str(lecture).replace("'", "''")
+    if sc[lecture][0] is not None:
+      ((pr, rm, days, times), sections) = sc[lecture]
+      pr = pr.replace("'", "''")
+      days = days.replace("'", "''")
+      times = times.replace("'", "''")
+      rm = rm.replace("'", "''")
+      s = "INSERT INTO lectures (cnum, num, professors, days, time, room) VALUES ('"
+      s = s + num + "', '" + rlec + "', '" + pr + "', '" + days + "', '" + times + "', '" + rm + "');"
+      print removeNonAscii(s)
+    else:
+      lec = True
+      sections = sc[lecture][1]
+    for section in sections:
+      if lec:
+        (ta, rm, days, times) = sections[section]
+        ta = ta.replace("'", "''")
+        rm = rm.replace("'", "''")
+        days = days.replace("'", "''")
+        times = times.replace("'", "''")
+        section = section.replace("'", "''")
+        s = "INSERT INTO lectures (cnum, num, professors, days, time, room) VALUES ('"
+        s = s + num + "', '" + section + "', '" + ta + "', '" + days + "', '" + times + "', '" + rm + "');"
+        print removeNonAscii(s)
+      else:
+        (ta, rm, days, times) = sections[section]
+        ta = ta.replace("'", "''")
+        rm = rm.replace("'", "''")
+        days = days.replace("'", "''")
+        times = times.replace("'", "''")
+        section = section.replace("'", "''")
+        s = "INSERT INTO recitations (cnum, lnum, section, tas, days, time, room) VALUES ('" + num + "', '"
+        s = s + rlec + "', '" + section + "', '" + ta + "', '" + days + "', '" + times + "', '" + rm + "');"
+        print removeNonAscii(s)
+
+depts = ['AFR','ARC','ART','BA','BCA','BHA','BMD','BSA','BSC','BXA','CAS','CB','CEE','CFA','CHE','CIT','CMU','CMY','CNB','CRM','CS','DES','DRA','ECE','ECO','ENG','EPP','ETC','H00','HC','HCI','HIS','HSS','IA','IAE','ICT','INI','ISH','ISM','ISR','LTI','MCS','MED','MEG','ML','MLG','MSE','MST','MUS','NVS','PE','PHI','PHY','PMP','PPP','PSY','ROB','SDS','SE','STA','STU','SV','VCU']
+
+bad = { '48025', '48120', '70471', '67311' }
+
+for d in depts:
+  cl = get_classes(d)
+  for c in cl:
+    if c in bad:
+      continue
+    print "-- " + c
+    fmt(d, c, get_details(c))
+
