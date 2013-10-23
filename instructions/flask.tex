@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{fullpage}
 \title{How to Install Flask}
 \author{Maxime Serrano \& Joshua Zimmerman}
 \begin{document}
@@ -125,7 +126,7 @@ def hello():
 \subsection{Step 5 - Configure Apache to see the Flask App}
 This step outlines how to inform Apache of how to run your Flask app.
 \begin{enumerate}
-\item Type \verb+cd /etc/apache2+ into your terminal.
+\item Type \verb+cd /etc/apache2+ into your root terminal.
 \item Open the file \verb+httpd.conf+ with your favorite editor, and replace its
 contents with:
 \begin{verbatim}
@@ -143,6 +144,7 @@ contents with:
 \item Open your web browser, and navigate to \verb+http://localhost/+. You should see something
 like the following:
 % TODO GRAPHICS
+\item Close your root terminal.
 \item Congratulations! You now have Flask deployed in a production environment. When you make
 changes, simply edit the file \verb+/var/www/app/website.py+, and type \verb+sudo /etc/init.d/apache2 restart+ to have the changes reflected by Apache.
 \end{enumerate}
