@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{fullpage}
-\title{How to Install Flask}
-\author{Maxime Serrano \& Joshua Zimmerman}
+\usepackage{graphicx}
+\title{How to Install Flask} \date{}
 \begin{document}
 \maketitle
 \section{Overview}
@@ -35,32 +35,33 @@ This step outlines how to install Python and Pip in the terminal.
 \begin{verbatim}
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt-get install python
+sudo apt-get install python python-pip
 \end{verbatim}
-You will be asked for your password. Type it in. The characters you type for your password
-will not display - but rest assured that they are being kept track of.
+You may be asked for your password. If you are, type it in. The characters you type for your password
+will not display - but rest assured that they are being kept track of. You may 
+also be asked if you are sure, with the prompt \verb+[Y/n]+. Simply hit enter
+to confirm.
 \item Type \verb+python+ into your terminal, and hit enter. Your terminal should look like
 the following:
-% TODO PUT GRAPHICS HERE.
+
+\includegraphics[height=6cm]{pic1.png}
+
 \item Type \verb+exit()+ to exit out of Python. You now have Python and Pip installed!
 \end{enumerate}
 \subsection{Step 2 - Install Flask}
-This step outlines how to install Flask using Pip.
+This step outlines how to install Flask using Pip, a package manager for Python libraries and utilities.
 \begin{enumerate}
 \item Open a terminal, or use an already open terminal.
 \item Within the terminal, type the following command:
 \begin{verbatim}
 sudo pip install Flask
 \end{verbatim}
-You will be asked for your password. Type it in. The characters you type for your password
+You may be asked for your password. If you are, type it in. The characters you type for your password
 will not display - but rest assured that they are being kept track of. You
-may also be asked whether or not you 
-are sure. When that prompt appears, 
+may also be asked whether or not you  are sure. When that prompt appears, 
 simply hit the Enter key to accept.
-\item Open your favorite text editor,
-such as \verb+vim+ or \verb+emacs+.
-\item Type the following into your
-text editor:
+\item Open your favorite text editor, such as \verb+vim+ or \verb+emacs+. \pagebreak
+\item Type the following text into your text editor:
 \begin{verbatim}
 from flask import Flask
 app = Flask(__name__)
@@ -72,8 +73,9 @@ app.run()
 \end{verbatim}
 \item Save the file as \verb+flask_test.py+ and close it.
 \item Run the file by typing \verb+python flask_test.py+.
-\item Open your web browser, and navigate to \verb+http://localhost:8080/+. You should see something like the following:
-% TODO GRAPHICS!
+\item Open your web browser, and navigate to \verb+http://localhost:5000/+. You should see something like the following:
+
+\includegraphics[height=6cm]{pic2.png}
 \item Go back to your terminal, and hit Ctrl-C.
 \item You now have Flask installed for development!
 \end{enumerate}
@@ -86,11 +88,17 @@ This step outlines how to install Apache, a development-ready web server.
 sudo apt-get install apache2 libapache2-mod-wsgi
 sudo /etc/init.d/apache2 restart
 \end{verbatim}
-You will be asked for your password. Type it in. The characters you type for your password
+You may be asked for your password. If so, type it in. The characters you type for your password
 will not display - but rest assured that they are being kept track of. You
 may also be asked whether or not you are sure. When that prompt appears, simply hit the Enter key
 to accept.
+\pagebreak
 \item Open a web browser, and navigate to \verb+http://localhost/+. You should see something like the following:
+
+
+\includegraphics[height=6cm]{pic3.png}
+
+\item Within your terminal, type the command \verb+sudo /etc/init.d/apache2 stop+.
 \item You should now have Apache installed, though it will not yet be running.
 \end{enumerate}
 \subsection{Step 4 - Setup a Flask app in Apache}
@@ -102,7 +110,9 @@ now belongs to the \verb+root+ user - be very careful with the rest of your chan
 from now on.
 \item Type \verb+cd /var/www/+ into your terminal. Now, type \verb+mkdir app; cd app+.
 \item Once you are safely in the \verb+app+ folder, your terminal should look like the following:
-% TODO GRAPHICS
+
+\includegraphics[height=6cm]{pic4.png}
+
 \item Type \verb+touch application.wsgi+.
 \item Open \verb+application.wsgi+ in your favorite editor, and type the following into it:
 \begin{verbatim}
@@ -127,10 +137,10 @@ def hello():
 This step outlines how to inform Apache of how to run your Flask app.
 \begin{enumerate}
 \item Type \verb+cd /etc/apache2+ into your root terminal.
-\item Open the file \verb+httpd.conf+ with your favorite editor, and replace its
-contents with:
+\item Open the file \verb+sites-available/default+ with your favorite editor, and
+replace its contents with:
 \begin{verbatim}
-<VirtualHost localhost>
+<VirtualHost *:80>
 	ServerName localhost
     WSGIScriptAlias / /var/www/app/application.wsgi
     <Directory /var/www/app>
@@ -143,7 +153,9 @@ contents with:
 \item Type \verb+/etc/init.d/apache2 restart+ into your terminal.
 \item Open your web browser, and navigate to \verb+http://localhost/+. You should see something
 like the following:
-% TODO GRAPHICS
+
+\includegraphics[height=6cm]{pic5.png}
+
 \item Close your root terminal.
 \item Congratulations! You now have Flask deployed in a production environment. When you make
 changes, simply edit the file \verb+/var/www/app/website.py+, and type \verb+sudo /etc/init.d/apache2 restart+ to have the changes reflected by Apache.
