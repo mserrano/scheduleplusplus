@@ -54,7 +54,10 @@ to confirm.
 \item Type \verb+python+ into your terminal, and hit enter. Your terminal should look like
 the following:
 
-\includegraphics[height=6cm]{pic1.png}
+
+\begin{figure}[h!]
+\centering \includegraphics[height=6cm]{pic1.png} \caption{A Python session.}
+\end{figure}
 
 \item Type \verb+exit()+ to exit out of Python. You now have Python and Pip installed!
 \end{enumerate}
@@ -85,7 +88,9 @@ app.run()
 \item Run the file by typing \verb+python flask_test.py+.
 \item Open your web browser, and navigate to \verb+http://localhost:5000/+. You should see something like the following:
 
-\includegraphics[height=6cm]{pic2.png}
+\begin{figure}[h!]
+\centering \includegraphics[height=6cm]{pic2.png} \caption{A browser visiting your development Flask website.}
+\end{figure}
 \item Go back to your terminal, and hit Ctrl-C.
 \item You now have Flask installed for development!
 \end{enumerate}
@@ -106,7 +111,9 @@ to accept.
 \item Open a web browser, and navigate to \verb+http://localhost/+. You should see something like the following:
 
 
-\includegraphics[height=6cm]{pic3.png}
+\begin{figure}[h!]
+\centering \includegraphics[height=6cm]{pic3.png} \caption{A browser visiting a default Apache install.}
+\end{figure}
 
 \item Within your terminal, type the command \verb+sudo /etc/init.d/apache2 stop+.
 \item You should now have Apache installed, though it will not yet be running.
@@ -121,7 +128,9 @@ from now on.
 \item Type \verb+cd /var/www/+ into your terminal. Now, type \verb+mkdir app; cd app+.
 \item Once you are safely in the \verb+app+ folder, your terminal should look like the following:
 
-\includegraphics[height=6cm]{pic4.png}
+\begin{figure}[h!]
+\centering \includegraphics[height=6cm]{pic4.png} \caption{A root terminal in the app directory.}
+\end{figure}
 
 \item Open your favorite editor, and type the following into it:
 \begin{verbatim}
@@ -160,9 +169,11 @@ replace its contents with:
 \item Save and close the file.
 \item Type \verb+/etc/init.d/apache2 restart+ into your terminal.
 \item Open your web browser, and navigate to \verb+http://localhost/+. You should see something
-like the following:
+like the contents of Figure 5 below.
 
-\includegraphics[height=6cm]{pic5.png}
+\begin{figure}
+\centering \includegraphics[height=10cm]{pic5.png} \caption{A web browser visiting your production Flask application.}
+\end{figure}
 
 \item Close your root terminal.
 \item Congratulations! You now have Flask deployed in a production environment. When you make
