@@ -4,7 +4,7 @@
 \title{} \date{}
 \begin{document}
 \noindent Maxime Serrano and Joshua Zimmerman \hfill 15-221 \\
-\{mserrano,jzimmerm\}\@andrew.cmu.edu \hfill Fall 2013 \\
+\{mserrano,jzimmerm\}@andrew.cmu.edu \hfill Fall 2013 \\
 10/24/2013 \hfill Mixed \\
 \begin{center}
 Homework 4: Instructions \\
@@ -21,7 +21,8 @@ to automatically generate it dynamically. Flask is a Python framework that allow
 for easy creation of complex websites.
 
 This tutorial will teach you how to install Flask and set it up in a production environment.
-The tutorial has {\em 5 steps} and should take no more than {\em 10 minutes} to complete.
+The tutorial has {\em 5 steps} and should take up to {\em 15 minutes} to complete, though
+depending on your environment, you may have to wait longer for some of the commands to complete.
 After completing these steps, you should be ready to write and deploy a custom, dynamic
 website using the Flask framework.
 
@@ -122,16 +123,14 @@ from now on.
 
 \includegraphics[height=6cm]{pic4.png}
 
-\item Type \verb+touch application.wsgi+.
-\item Open \verb+application.wsgi+ in your favorite editor, and type the following into it:
+\item Open your favorite editor, and type the following into it:
 \begin{verbatim}
 import sys
 sys.path.append('/var/www/app')
 from website import app as application
 \end{verbatim}
-\item Save and close the file.
-\item Type \verb+touch website.py+.
-\item Open \verb+website.py+ in  your favorite editor, and type the following into it:
+\item Save and close the file as \verb+application.wsgi+.
+\item Open your favorite editor, and type the following into it:
 \begin{verbatim}
 from flask import Flask
 app = Flask(__name__)
@@ -140,7 +139,7 @@ app = Flask(__name__)
 def hello():
     return "Hello world, from Apache!"
 \end{verbatim}
-\item Save and close the file.
+\item Save and close the file as \verb+website.py+.
 \end{enumerate}
 \subsection{Step 5 - Configure Apache to see the Flask App}
 This step outlines how to inform Apache of how to run your Flask app.
