@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title> {{ name }} </title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Course {{ num }} - {{ name }} </h3> </div>
+          <p> {{ desc }} </p>
+          <p>Prerequisites: {{ pre }}</p>
+          <p>Corequisites: {{ co }}</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
