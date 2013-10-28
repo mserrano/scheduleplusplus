@@ -11,7 +11,7 @@ def c(num):
   db = MySQLdb.connect(host="localhost", user="spp",
                        passwd="XXXXXXXXXXXXXXXXXX", db="spp")
   c = db.cursor()
-  x = c.execute("SELECT * FROM classes WHERE num=%s", str(num))
+  x = c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
   for r in rows:
     num, dept, name, units, desc, pre, co = r
@@ -75,7 +75,6 @@ def register():
       success = True
     except:
       pass
-#    db.commit()
     db.close()
     if success:
       return render_template("registered.html")
