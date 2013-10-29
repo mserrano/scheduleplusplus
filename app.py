@@ -8,15 +8,14 @@ app = Flask('website')
 app.config['DEBUG'] = True
 app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
+def get_database_conn():
+  return MySQLdb.connect(host="localhost", user="spp",
+                         passwd="XXXXXXXXXXXXXXXXXX", db="spp")
 
-def getdb():
-  db = MySQLdb.connect(host="localhost", user="spp",
-                       passwd="XXXX", db="spp")
-  return db
 
 @app.route("/class/<int:num>/")
 def get_class(num):
-  db = getdb()
+  db = get_database_conn()
   c = db.cursor()
   c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
@@ -25,6 +24,7 @@ def get_class(num):
   db.close()
   return render_template("class.html", num=num, dept=dept, name=name,
                          units=units, desc=desc, pre=pre, co=co)
+
 
 @app.route("/api/search", methods=["POST"])
 def search():
@@ -53,7 +53,7 @@ def login():
     if username == '':
       return render_template("login_failed.html", msg="Invalid username!")
     password = request.form['password']
-    db = getdb()
+    db = get_database_conn()
     c = db.cursor()
     c.execute("SELECT id, sha_pass_hash FROM accounts WHERE username=%s LIMIT 1",
               username)
@@ -87,7 +87,7 @@ def register():
     if username == '':
       return render_template("reg_failed.html", msg="Invalid username!")
     password = request.form['password']
-    db = getdb()
+    db = get_database_conn()
     c = db.cursor()
     # passwords are case-sensitive, because that's desirable.
     hsh = sha1(username + ':' + password).hexdigest().upper()
@@ -108,7 +108,7 @@ def register():
       return render_template("reg_failed.html",
                              msg="Username in use or database error!")
   else:
-    return render_template("register.html") 
+    return render_template("register.html")
 
 
 @app.route("/api/save_schedule", methods=["GET", "POST"])
