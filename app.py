@@ -1,20 +1,26 @@
-from flask import Flask, request, session, render_template
+from flask import Flask, request, session, render_template, redirect, url_for
 from json import dumps as tojson
 from hashlib import sha1
+from uuid import uuid4 as uuid
 import MySQLdb
 
 app = Flask('website')
 app.config['DEBUG'] = True
+app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+
+
+def getdb():
+  db = MySQLdb.connect(host="localhost", user="spp",
+                       passwd="XXXX", db="spp")
+  return db
 
 @app.route("/class/<int:num>/")
-def c(num):
-  db = MySQLdb.connect(host="localhost", user="spp",
-                       passwd="XXXXXXXXXXXXXXXXXX", db="spp")
+def get_class(num):
+  db = getdb()
   c = db.cursor()
-  x = c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
+  c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
-  for r in rows:
-    num, dept, name, units, desc, pre, co = r
+  num, dept, name, units, desc, pre, co = rows[0]
   c.close() 
   db.close()
   return render_template("class.html", num=num, dept=dept, name=name,
@@ -39,32 +45,52 @@ def info(course_num):
   pass
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login/", methods=["GET", "POST"])
 def login():
   """Log the given user in"""
-  pass
+  if request.method == 'POST':
+    username = request.form['username'].upper()
+    if username == '':
+      return render_template("login_failed.html", msg="Invalid username!")
+    password = request.form['password']
+    db = getdb()
+    c = db.cursor()
+    c.execute("SELECT id, sha_pass_hash FROM accounts WHERE username=%s LIMIT 1",
+              username)
+    rows = c.fetchall()
+    if len(rows) == 0:
+      return render_template("login_failed.html", msg="Unknown user!")
+    i,p = rows[0]
+    hsh = sha1(username + ':' + password).hexdigest().upper()
+    if hsh == p:
+      # yay successful login
+      session['user'] = (i, username)
+      return render_template("login_success.html")
+    else:
+      return render_template("login_failed.html", msg="Wrong password!")
+  else:
+    return render_template("login.html")
 
-
-@app.route("/logout")
+@app.route("/logout/")
 def logout():
   """Log the given user out"""
-  pass
+  session.pop('user', None)
+  return redirect(url_for('idx'))
 
 
 @app.route("/register/", methods=["GET", "POST"])
 def register():
   """Register a user"""
   if request.method == 'POST':
+    # usernames are case-insensitive to avoid nonsense.
     username = request.form['username'].upper()
     if username == '':
       return render_template("reg_failed.html", msg="Invalid username!")
     password = request.form['password']
-    db = MySQLdb.connect(host='localhost', user='spp',
-                         passwd='XXXXXXXXXXXXXXXXXX', db='spp')
+    db = getdb()
     c = db.cursor()
-    # yes, this means our passwords are case-insensitive. I don't
-    # really care
-    hsh = sha1(username + ':' + password.upper()).hexdigest().upper()
+    # passwords are case-sensitive, because that's desirable.
+    hsh = sha1(username + ':' + password).hexdigest().upper()
     success = False
     try:
       c = db.cursor()

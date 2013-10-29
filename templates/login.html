@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Login</title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Login</h3></div>
+          <form action="/login/" method="post">
+            <fieldset>
+              <label>Username</label>
+              <input type="text" name="username" />
+              <label>Password</label>
+              <input type="password" name="password" />
+              <button type="submit" class="btn">Submit</button>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
