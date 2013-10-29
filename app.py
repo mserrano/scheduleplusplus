@@ -6,19 +6,24 @@ import MySQLdb
 app = Flask('website')
 app.config['DEBUG'] = True
 
+def get_database_conn():
+  return MySQLdb.connect(host="localhost", user="spp",
+                         passwd="XXXXXXXXXXXXXXXXXX", db="spp")
+
+
 @app.route("/class/<int:num>/")
-def c(num):
-  db = MySQLdb.connect(host="localhost", user="spp",
-                       passwd="XXXXXXXXXXXXXXXXXX", db="spp")
+def class(num):
+  db = get_database_conn()
   c = db.cursor()
   x = c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
   for r in rows:
     num, dept, name, units, desc, pre, co = r
-  c.close() 
+  c.close()
   db.close()
   return render_template("class.html", num=num, dept=dept, name=name,
                          units=units, desc=desc, pre=pre, co=co)
+
 
 @app.route("/api/search", methods=["POST"])
 def search():
@@ -59,11 +64,10 @@ def register():
     if username == '':
       return render_template("reg_failed.html", msg="Invalid username!")
     password = request.form['password']
-    db = MySQLdb.connect(host='localhost', user='spp',
-                         passwd='XXXXXXXXXXXXXXXXXX', db='spp')
+    db = get_database_conn()
     c = db.cursor()
-    # yes, this means our passwords are case-insensitive. I don't
-    # really care
+    # yes, this means our passwords are case-insensitive.
+    # TODO: consider changing this and adding an indicator if capslock is on.
     hsh = sha1(username + ':' + password.upper()).hexdigest().upper()
     success = False
     try:
@@ -82,7 +86,7 @@ def register():
       return render_template("reg_failed.html",
                              msg="Username in use or database error!")
   else:
-    return render_template("register.html") 
+    return render_template("register.html")
 
 
 @app.route("/api/save_schedule", methods=["GET", "POST"])
