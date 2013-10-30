@@ -2,9 +2,12 @@
       <div class="container">
         <a class="navbar-brand" href="/">Schedule++</a>
         <ul class="nav navbar-nav">
+          {% if logged_in() %}
+          <li><a href="/logout/">Logout</a></li>
+          {% else %}
           <li><a href="/register/">Registration</a></li>
           <li><a href="/login/">Login</a></li>
-          <li><a href="/logout/">Logout</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>

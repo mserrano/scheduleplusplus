@@ -12,8 +12,8 @@
         <div class="panel">
           <div class="panel-heading"><h3 class="panel-title">Course {{ num }} - {{ name }} </h3> </div>
           <p> {{ desc }} </p>
-          <p>Prerequisites: {{ pre }}</p>
-          <p>Corequisites: {{ co }}</p>
+          <p>Prerequisites: {{ pre|repclasses|safe }}</p>
+          <p>Corequisites: {{ co|repclasses|safe }}</p>
         </div>
       </div>
     </div>

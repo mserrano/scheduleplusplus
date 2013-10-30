@@ -3,15 +3,25 @@ from json import dumps as tojson
 from hashlib import sha1
 from uuid import uuid4 as uuid
 import MySQLdb
+import re
 
 app = Flask('website')
 app.config['DEBUG'] = True
 app.secret_key = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
+def logged_in():
+  return 'user' in session
+
+def replace_classes(value):
+  (newval, _) = re.subn(r'(\d{5})', r'<a href="/class/\1">\1</a>', value)
+  return newval
+
+app.jinja_env.filters['repclasses'] = replace_classes
+app.jinja_env.globals['logged_in'] = logged_in
+
 def get_database_conn():
   return MySQLdb.connect(host="localhost", user="spp",
                          passwd="XXXXXXXXXXXXXXXXXX", db="spp")
-
 
 @app.route("/class/<int:num>/")
 def get_class(num):
@@ -19,12 +29,16 @@ def get_class(num):
   c = db.cursor()
   c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
-  num, dept, name, units, desc, pre, co = rows[0]
-  c.close() 
-  db.close()
-  return render_template("class.html", num=num, dept=dept, name=name,
-                         units=units, desc=desc, pre=pre, co=co)
-
+  if len(rows) > 0:
+    num, dept, name, units, desc, pre, co = rows[0]
+    c.close() 
+    db.close()
+    return render_template("class.html", num=num, dept=dept, name=name,
+                           units=units, desc=desc, pre=pre, co=co)
+  else:
+    c.close()
+    db.close()
+    return render_template("class_failed.html", num=num)
 
 @app.route("/api/search", methods=["POST"])
 def search():
@@ -43,7 +57,6 @@ def schedule():
 def info(course_num):
   """Get info about the given course"""
   pass
-
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
