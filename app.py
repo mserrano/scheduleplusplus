@@ -184,6 +184,37 @@ def register():
     return render_template("register.html")
 
 
+def gen_schedule(potential_classes,
+                 wake_up_time=800,
+                 consistent_lunchtime=False,
+                 end_time=1700,
+                 min_units=36,
+                 max_units=70):
+  """
+  Args:
+      potential_classes: dict of classes -> priority
+        (infinite priority if mandatory).
+        Each class should be an object containing fields:
+            unit_count    (number)
+            meeting_times
+                dict of {lec num->(lecture days, start, end,
+                          {rec_lett->(rec. day, start, end)})}
+                e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
+            course_number (str)
+      wake_up_time: earliest class time
+      consistent_lunchtime: Should there be a consistent break in the middle of
+        the day?
+      end_time: latest class end time
+      min_units, max_units: minimum and maximum number of units, respectively
+
+   Returns list of lists of (course_num, lec_num, recitation). e.g.
+   [[("15251", "1", "A"), ("15213", "2", "G"), ("80100", "1", "C")],
+    [("15251", "1", "A"), ("15213", "2", "G"), ("76101", "1", "AA"), ("80180", "2", "D")]
+    ]
+  """
+  pass
+
+
 @app.route("/api/save_schedule", methods=["GET", "POST"])
 def save_schedule():
   """Save a created schedule to the database"""
