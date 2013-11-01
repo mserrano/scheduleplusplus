@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Departments</title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Departments</h3></div>
+          <ul class="list-group">
+          {% for d in data %}
+            <li class="list-group-item"><a href="/dept/{{ d[0] }}/">{{ d[2] }} ({{d[1]}})</a></li>
+          {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -30,6 +30,22 @@ def close_database_conn(_):
   if db is not None:
     db.close()
 
+@app.route("/dept/<dept>/")
+def get_classes_by_dept(dept):
+  c = g.db.cursor()
+  c.execute("SELECT num, name, units FROM classes WHERE dept=%s ORDER BY num ASC", dept)
+  rows = c.fetchall()
+  c.close()
+  return render_template("dept.html", dept=dept, data=rows)
+
+@app.route("/depts/")
+def get_depts():
+  c = g.db.cursor()
+  c.execute("SELECT * FROM departments ORDER BY name ASC")
+  rows = c.fetchall()
+  c.close()
+  return render_template("depts.html", data=rows)
+
 @app.route("/class/<int:num>/")
 def get_class(num):
   c = g.db.cursor()
