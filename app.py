@@ -4,6 +4,7 @@ from hashlib import sha1
 from uuid import uuid4 as uuid
 import MySQLdb
 import re
+import operator
 
 app = Flask('website')
 app.config['DEBUG'] = True
@@ -29,6 +30,37 @@ def close_database_conn(_):
   db = getattr(g, 'db', None)
   if db is not None:
     db.close()
+
+@app.route("/search/")
+def search():
+  return render_template("search.html")
+
+@app.route("/searched/")
+def search_q(query):
+  name_query = request.args.get('name_query', None)
+  if name_query is not None:
+    names = re.split(r'\W+', name_query)
+    c = g.db.cursor()
+    results = {}
+    result_counts = {}
+    for name in names:
+      c.execute("SELECT num, dept, name FROM classes WHERE name LIKE '%%%s%%'", name)
+      rows = c.fetchall()
+      for result in rows:
+        if result[0] in results:
+          result_counts[result[0]] += 1
+        else:
+          results[result[0]] = result
+          result_counts[result[0]] = 1
+    sorted_results = sorted(result_counts.iteritems(), key=operator.itemgetter(1))
+    sorted_results = [a for (a,b) in sorted_results]
+    newresults = []
+    for cnum in sorted_results:
+      newresults += [results[cnum]]
+    results = newresults
+    return render_template("search_results.html", data=results)
+  else:
+    return render_template("search_results.html", data=[])
 
 @app.route("/dept/<dept>/")
 def get_classes_by_dept(dept):

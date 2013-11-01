@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Search</title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Search</h3></div>
+          <form action="/searched/" method="get">
+            <fieldset>
+              <label>Name Query</label>
+              <input type="text" name="name" />
+              <button type="submit" class="btn">Submit</button>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Search Results</title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+    {% if data|count > 0 %}
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Search Results</h3></div>
+          <table class="table">
+            <tr><th>Number</th><th>Dept</th><th>Name</th></tr>
+            {% for d in data %}
+              <tr><td><a href="/class/{{d[0]}}/">{{d[0]}}</a></td><td>{{d[1]}}</td><td><a href="/class/{{d[0]}}/">{{d[2]}}</a></td></tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Search Results</h3></div>
+          No results found!
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </body>
+</html>
+
