@@ -1,4 +1,4 @@
-from flask import Flask, request, session, render_template, redirect, url_for
+from flask import Flask, request, session, render_template, redirect, url_for, g
 from json import dumps as tojson
 from hashlib import sha1
 from uuid import uuid4 as uuid
@@ -25,7 +25,7 @@ def get_database_conn():
                          passwd="XXXXXXXXXXXXXXXXXX", db="spp")
 
 @app.teardown_request
-def close_database_conn():
+def close_database_conn(_):
   db = getattr(g, 'db', None)
   if db is not None:
     db.close()
@@ -35,12 +35,24 @@ def get_class(num):
   c = g.db.cursor()
   c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
-  c.close()
   if len(rows) > 0:
     num, dept, name, units, desc, pre, co = rows[0]
+    c.execute("SELECT * FROM lectures WHERE cnum=%s", str(num))
+    rows = c.fetchall()
+    lectures = []
+    for lec in rows:
+      _, lnum, profs, days, time, room = lec
+      c.execute("SELECT * FROM recitations WHERE cnum=%s AND lnum=%s", (str(num), lnum))
+      newrows = c.fetchall()
+      recitations = []
+      for rec in newrows:
+        recitations += [(rec[2], rec[3], rec[4], rec[5], rec[6])]
+      lectures += [(lnum, profs, days, time, room, recitations, len(recitations) > 0)]
+    c.close()
     return render_template("class.html", num=num, dept=dept, name=name,
-                           units=units, desc=desc, pre=pre, co=co)
+                           units=units, desc=desc, pre=pre, co=co, lecs=lectures)
   else:
+    c.close()
     return render_template("class_failed.html", num=num)
 
 @app.route("/api/search", methods=["POST"])

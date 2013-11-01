@@ -16,6 +16,22 @@
           <p>Corequisites: {{ co|repclasses|safe }}</p>
         </div>
       </div>
+      {% if lecs|length > 0 %}
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Sections</h3> </div>
+          <table class="table">
+            <tr><th>Section</th><th>Instructors</th><th>Days</th><th>Time</th><th>Location</th></tr>
+            {% for lec in lecs %}
+              <tr><td><b>{{lec[0]}}</b></td><td>{{lec[1]}}</td><td>{{lec[2]}}</td><td>{{lec[3]}}</td><td>{{lec[4]}}</td></tr>
+              {% for rec in lec[5] %}
+                <tr><td>{{rec[0]}}</td><td>{{rec[1]}}</td><td>{{rec[2]}}</td><td>{{rec[3]}}</td><td>{{rec[4]}}</td>
+              {% endfor %}
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </body>
 </html>
