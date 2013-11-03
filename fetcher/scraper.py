@@ -24,7 +24,7 @@ def get_classes(dpt):
   b = BeautifulSoup(r.text)
   links = b.find_all('a')
   courses = [extract_course(link) for link in links]
-  courses = [c for c in courses if c is not None]
+  courses = [(dpt,c) for c in courses if c is not None]
   return courses
 
 def get_details(c):
@@ -55,7 +55,8 @@ def get_details(c):
     units = str(j['units'])
     lectures = j['lectures']
   except:
-    lectures = title = units = "Not found."
+    lectures = {}
+    title = units = "Not found."
   return c, title, units, description, prereqs, coreqs, lectures
 
 def lec_to_str(lecture):
@@ -69,16 +70,24 @@ def lec_to_str(lecture):
 
 def removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
-def fmt((num, title, units, description, prereqs, coreqs, lectures)):
-  print num, "-", title, "(" + units + " units)"
-  print "\tDescription:",  removeNonAscii(description)
-  print "\tPrereqs:", prereqs
-  print "\tCoreqs:", coreqs
+def gettitle(lecture):
+  if 'name' in lecture:
+    return lecture['name'] + " " + lecture['section']
+  return lecture['section']
+
+def fmt(dept, (num, title, units, description, prereqs, coreqs, lectures)):
+  title, description = removeNonAscii(title).replace("'", "''"), removeNonAscii(description).replace("'", "''")
+  s = "REPLACE INTO classes VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');\n" % (num, dept, title, units, description, prereqs, coreqs)
   for lecture in lectures:
-    print "\t" + lec_to_str(lecture)
+    lec = gettitle(lecture).replace("'", "''")
+    inst = lecture['instructors'].replace("'", "''")
+    s += "REPLACE INTO lectures VALUES ('%s', '%s', '%s', '%s', '%s', '%s');\n" % (num, lec, inst,
+                                                                                lecture['days'], lecture['time_start'] + "-" + lecture['time_end'], lecture['location'])
     if 'recitations' in lecture:
-      for recitation in lecture['recitations']:
-        print "\t\t" + lec_to_str(recitation)
+      for rec in lecture['recitations']:
+        s += "REPLACE INTO recitations VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');\n" % (
+          num, lec, gettitle(rec).replace("'", "''"), rec['instructors'].replace("'", "''"), rec['days'], rec['time_start'] + "-" + rec['time_end'], rec['location'])
+  return s
 
 def build_url(target):
   return baseurl + semester + '/' + target + '?app_id=' + appID + '&app_secret_key=' + secretKey
@@ -94,6 +103,12 @@ depts = ['AFR', 'ARC', 'ART', 'BXA', 'BSC', 'BMD', 'BA', 'CFA', 'CIT', 'CMU', 'C
          'STA', 'STU', 'IA']
 
 classes = flatten(get_classes(d) for d in depts)
-class_details = (get_details(c) for c in classes)
-for d in class_details:
-  fmt(d)
+print "Got class lists.", classes
+details = ((d,get_details(c)) for (d,c) in classes)
+print "Got details.", details
+results = flatten(fmt(d,dets) for (d,dets) in details)
+print "Formatted."
+f = open("out.sql", "w")
+f.write(''.join(results))
+f.close()
+print "Done."
