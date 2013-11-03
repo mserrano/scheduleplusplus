@@ -32,35 +32,39 @@ def close_database_conn(_):
     db.close()
 
 @app.route("/search/")
-def search():
+def search_page():
   return render_template("search.html")
 
+def do_search(c, field, data, results, result_counts):
+  array = re.split(r'\W+', data)
+  for x in array:
+    c.execute("SELECT num, dept, name FROM classes WHERE " + field + " LIKE %s", '%'+x+'%')
+    rows = c.fetchall()
+    for result in rows:
+      if result[0] in results:
+        result_counts[result[0]] += 1
+      else:
+        results[result[0]] = result
+        result_counts[result[0]] = 1
+
 @app.route("/searched/")
-def search_q(query):
-  name_query = request.args.get('name_query', None)
-  if name_query is not None:
-    names = re.split(r'\W+', name_query)
-    c = g.db.cursor()
-    results = {}
-    result_counts = {}
-    for name in names:
-      c.execute("SELECT num, dept, name FROM classes WHERE name LIKE '%%%s%%'", name)
-      rows = c.fetchall()
-      for result in rows:
-        if result[0] in results:
-          result_counts[result[0]] += 1
-        else:
-          results[result[0]] = result
-          result_counts[result[0]] = 1
-    sorted_results = sorted(result_counts.iteritems(), key=operator.itemgetter(1))
-    sorted_results = [a for (a,b) in sorted_results]
-    newresults = []
-    for cnum in sorted_results:
-      newresults += [results[cnum]]
-    results = newresults
-    return render_template("search_results.html", data=results)
-  else:
-    return render_template("search_results.html", data=[])
+def search_q():
+  name_query = request.args.get('name', None)
+  desc_query = request.args.get('desc', None)
+  results = {}
+  result_counts = {}
+  c = g.db.cursor()
+  if name_query is not None and name_query is not '':
+    do_search(c, "name", name_query, results, result_counts)
+  if desc_query is not None and desc_query is not '':
+    do_search(c, "description", desc_query, results, result_counts)
+  sorted_results = sorted(result_counts.iteritems(), key=operator.itemgetter(1))
+  sorted_results = [a for (a,b) in sorted_results]
+  newresults = []
+  for cnum in sorted_results:
+    newresults += [results[cnum]]
+  results = list(reversed(newresults))
+  return render_template("search_results.html", data=results)
 
 @app.route("/dept/<dept>/")
 def get_classes_by_dept(dept):
