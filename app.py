@@ -185,9 +185,9 @@ def register():
 
 
 def gen_schedule(potential_classes,
-                 wake_up_time=800,
+                 wake_up_time=600,
                  consistent_lunchtime=False,
-                 end_time=1700,
+                 end_time=2300,
                  min_units=36,
                  max_units=70):
   """
@@ -212,6 +212,14 @@ def gen_schedule(potential_classes,
     [("15251", "1", "A"), ("15213", "2", "G"), ("76101", "1", "AA"), ("80180", "2", "D")]
     ]
   """
+  # First, filter out classes and recitations that are out of range.
+  for (cls, pri) in potential_classes.iteritems():
+    for (lec_num,
+          (lec_days, start, end, rec_info)) in cls.meeting_times.iteritems():
+      pass
+
+  # Then, try all subsets of classes that add up to correct numbers of units
+  #   For each of those classes, generate
   pass
 
 
