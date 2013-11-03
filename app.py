@@ -82,8 +82,7 @@ def get_depts():
   c.close()
   return render_template("depts.html", data=rows)
 
-@app.route("/class/<int:num>/")
-def get_class(num):
+def get_class_from_db(num):
   c = g.db.cursor()
   c.execute("SELECT * FROM classes WHERE num=%s LIMIT 1", str(num))
   rows = c.fetchall()
@@ -101,10 +100,19 @@ def get_class(num):
         recitations += [(rec[2], rec[3], rec[4], rec[5], rec[6])]
       lectures += [(lnum, profs, days, time, room, recitations, len(recitations) > 0)]
     c.close()
+    return (num, dept, name, units, desc, pre, co, lectures)
+  else:
+    c.close()
+    return None
+
+@app.route("/class/<int:num>/")
+def get_class(num):
+  z = get_class_from_db(num)
+  if z is not None:
+    num, dept, name, units, desc, pre, co, lectures = z
     return render_template("class.html", num=num, dept=dept, name=name,
                            units=units, desc=desc, pre=pre, co=co, lecs=lectures)
   else:
-    c.close()
     return render_template("class_failed.html", num=num)
 
 @app.route("/api/search", methods=["POST"])
@@ -123,7 +131,24 @@ def schedule():
 @app.route("/api/info/<course_num>")
 def info(course_num):
   """Get info about the given course"""
-  pass
+  z = get_class_from_db(num)
+  if z is not None:
+    num, dept, name, units, desc, pre, co, lectures = z
+    c = { 'num': num, 'dept': dept,'name': name,'units': units,'desc': desc,'pre': pre,'co': co }
+    newlectures = {}
+    for lecture in lectures:
+      lnum, profs, days, time, room, recitations, _ = lecture
+      o = { 'instructors': profs, 'days': days, 'time': time, 'room': room }
+      newrecitations = {}
+      for recitation in recitations:
+        section, instructors, rdays, rtime, rroom = recitation
+        newrecitations[section] = { 'instructors': instructors, 'days': rdays, 'time': rtime, 'room': rroom }
+      o['recitations'] = newrecitations
+      newlectures[lnum] = o
+    c['lectures'] = newlectures
+  else:
+    c = {}  
+  return tojson(c)
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
