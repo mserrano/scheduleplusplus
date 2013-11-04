@@ -1,1 +1,28 @@
 \section{Progress}
+
+Our project has made substantial progress in the weeks since we submitted our proposal.
+We first made an effort to obtain accurate, high-quality data on the courses offered next semester.
+We determined that the Schedule of Classes page was most likely to offer up-to-date data in a 
+format easily analyzed by a machine. Once the course list for Spring 2014 was published, we used
+a combination of the Schedule of Classes data and the ScottyLabs scheduling API in order to build
+our own database of course information. Once we obtained this data, we built a bare-bones frontend
+that allows users to search for courses by entering fragments of names and descriptions into search
+boxes. We also added a secure registration and login system to ensure that users can only affect
+their own data.
+
+We have achieved the progress we've made so far largely by following the methodology described in 
+our proposal. We split the work into ``frontend'' and ``backend'' sections, as described in our
+Gantt chart, and met weekly in order to ensure that we remained in sync. These meetings focused
+mainly on the design of the interface between the frontend and the backend, in order to ensure
+that no member of either half would be unable to work due to not knowing what the plan for the
+other half was. We also met in smaller, 2-person groups in order to make more specific internal
+design decisions, in particular in the design of the automatic scheduling algorithm.
+
+We have split the work largely by having each member work on the things most interesting to them.
+Maxime has led the backend code-writing by producing the data and implementing the existing
+authentication and search systems. Joshua has spent significant time designing and writing a
+useful, stable API in order to make future extensions of the existing codebase fast and easy.
+Chris and Jacob have spent most of their time designing the eventual user interface of the project,
+coming up with mock-ups and backend requirements in order to ensure no work is wasted. This separation
+of concerns has allowed each member to make significant progress without needing to wait for
+the others, allowing development to proceed apace.
