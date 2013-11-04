@@ -47,21 +47,38 @@
     <!-- END TOP BAR -->
     
     <div class="container">
+
       <div class="row">
 
         <div class="span1" id="calendarTabs">
-          <p>Schedule tabs go here</p>
+          <table class="table table-striped table-hover table-compact">
+            <thead>
+              <tr><th>Versions</th></tr>
+            </thead>
+            <tbody>
+              <!-- 
+              TEMPLATED VERSION:
+              {% for tab in subSchedules %}
+                <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab={{tab.number}}">{{ tab.name }}</a></center></th></tr>
+              {% endfor %} 
+
+              PLACEHOLDER: -->
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=1">Skedg1</a></center></th></tr>
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=2">Skedg2</a></center></th></tr>
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=3">Fall 13</a></center></th></tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="span8" id="calendarContainer">
+        <div class="span9" id="calendarContainer">
           <p>
-          <canvas id="calendar" width="600" height="500">
+          <canvas id="calendar" width="700" height="500">
             Fallback for old browsers goes here
           </canvas>
           </p>
         </div>
 
-        <div class="span3" id="courseList">
+        <div class="span2" id="courseList">
           <p>Course list goes here</p>
         </div>
       </div>
