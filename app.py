@@ -22,8 +22,7 @@ app.jinja_env.globals['logged_in'] = logged_in
 
 @app.before_request
 def get_database_conn():
-  g.db = MySQLdb.connect(host="localhost", user="spp",
-                         passwd="XXXXXXXXXXXXXXXXXX", db="spp")
+  g.db = MySQLdb.connect(host="localhost", user="spp", passwd="XXXXXXXXXXXXXXXXXX", db="spp")
 
 @app.teardown_request
 def close_database_conn(_):
@@ -65,6 +64,31 @@ def search_q():
     newresults += [results[cnum]]
   results = list(reversed(newresults))
   return render_template("search_results.html", data=results)
+
+@app.route("/api/search", methods=["POST"])
+def search():
+  """Return a list of classes (id, name, depts) matching the given terms
+  (can be IDs, names, descriptions, professors...)"""
+  id_query = request.form.get('id', None)
+  name_query = request.form.get('name', None)
+  desc_query = request.form.get('desc', None)
+  results = {}
+  result_counts = {}
+  c = g.db.cursor()
+  if id_query is not None and id_query is not '':
+    do_search(c, "num", id_query, results, result_counts)
+  if name_query is not None and name_query is not '':
+    do_search(c, "name", name_query, results, result_counts)
+  if desc_query is not None and desc_query is not '':
+    do_search(c, "description", desc_query, results, result_counts)
+  sorted_results = sorted(result_counts.iteritems(), key=operator.itemgetter(1))
+  sorted_results = [a for (a,b) in sorted_results]
+  newresults = []
+  for cnum in sorted_results:
+    num, dept, name = results[cnum]
+    newresults +=  [{'num': num, 'dept': dept, 'name': name}]
+  results = list(reversed(newresults))
+  return tojson(results)
 
 @app.route("/dept/<dept>/")
 def get_classes_by_dept(dept):
@@ -115,19 +139,6 @@ def get_class(num):
   else:
     return render_template("class_failed.html", num=num)
 
-@app.route("/api/search", methods=["POST"])
-def search():
-  """Return a list of classes matching the given terms
-  (can be IDs, names, descriptions, professors...)"""
-  pass
-
-
-@app.route("/api/schedule", methods=["POST"])
-def schedule():
-  """Get a schedule satisfying the given constraints and possible classes."""
-  pass
-
-
 @app.route("/api/info/<course_num>")
 def info(course_num):
   """Get info about the given course"""
@@ -142,13 +153,48 @@ def info(course_num):
       newrecitations = {}
       for recitation in recitations:
         section, instructors, rdays, rtime, rroom = recitation
-        newrecitations[section] = { 'instructors': instructors, 'days': rdays, 'time': rtime, 'room': rroom }
+        newrecitations[section] = { 'instructors': instructors, 'days': rdays, 'time': rtime,
+                                    'room': rroom }
       o['recitations'] = newrecitations
       newlectures[lnum] = o
     c['lectures'] = newlectures
   else:
-    c = {}  
+    c = {}
   return tojson(c)
+
+def gen_schedule(classes, start_time, consistent_lunchtime, end_time, min_units, max_units):
+  """
+  Args:
+      classes: dict of classes -> priority
+        (infinite priority if mandatory).
+        Each class should be an object containing fields:
+            unit_count    (number)
+            meeting_times
+                dict of {lec num->(lecture days, start, end, {rec_lett->(rec. day, start, end)})}
+                e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
+            course_number (str)
+      start_time: earliest class time
+      consistent_lunchtime: Should there be a consistent break in the middle of the day?
+      end_time: latest class end time
+      min_units, max_units: minimum and maximum number of units, respectively
+
+   Returns list of lists of (course_num, lec_num, recitation). e.g.
+   [[("15251", "1", "A"), ("15213", "2", "G"), ("80100", "1", "C")],
+    [("15251", "1", "A"), ("15213", "2", "G"), ("76101", "1", "AA"), ("80180", "2", "D")]]
+  """
+  return None
+
+@app.route("/api/schedule", methods=["POST"])
+def schedule():
+  """Get a schedule satisfying the given constraints and possible classes."""
+  potential_classes = request.form.get('potential', {})
+  wake_up_time = request.form.get('wakeup', 800)
+  lunchtime = request.form.get('lunchtime', False)
+  end_time = request.form.get('end_time', 1700)
+  min_units = request.form.get('min_units', 36)
+  max_units = request.form.get('max_units', 70)
+  res = gen_schedule(potential_classes, wake_up_time, lunchtime, end_time, min_units, max_units)
+  return tojson(res)
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
@@ -159,8 +205,7 @@ def login():
       return render_template("login_failed.html", msg="Invalid username!")
     password = request.form['password']
     c = g.db.cursor()
-    c.execute("SELECT id, sha_pass_hash FROM accounts WHERE username=%s LIMIT 1",
-              username)
+    c.execute("SELECT id, sha_pass_hash FROM accounts WHERE username=%s LIMIT 1", username)
     rows = c.fetchall()
     c.close()
     if len(rows) == 0:
@@ -168,7 +213,6 @@ def login():
     i,p = rows[0]
     hsh = sha1(username + ':' + password).hexdigest().upper()
     if hsh == p:
-      # yay successful login
       session['user'] = (i, username)
       return render_template("login_success.html")
     else:
@@ -181,7 +225,6 @@ def logout():
   """Log the given user out"""
   session.pop('user', None)
   return redirect(url_for('idx'))
-
 
 @app.route("/register/", methods=["GET", "POST"])
 def register():
@@ -197,8 +240,7 @@ def register():
     success = False
     try:
       c = g.db.cursor()
-      c.execute("INSERT INTO accounts (username, sha_pass_hash) VALUES (%s,%s)",
-                (username, hsh))
+      c.execute("INSERT INTO accounts (username, sha_pass_hash) VALUES (%s,%s)", (username, hsh))
       c.close()
       g.db.commit()
       success = True
@@ -207,44 +249,11 @@ def register():
     if success:
       return render_template("registered.html")
     else:
-      return render_template("reg_failed.html",
-                             msg="Username in use or database error!")
+      return render_template("reg_failed.html", msg="Username in use or database error!")
   else:
     return render_template("register.html")
 
-
-def gen_schedule(potential_classes,
-                 wake_up_time=800,
-                 consistent_lunchtime=False,
-                 end_time=1700,
-                 min_units=36,
-                 max_units=70):
-  """
-  Args:
-      potential_classes: dict of classes -> priority
-        (infinite priority if mandatory).
-        Each class should be an object containing fields:
-            unit_count    (number)
-            meeting_times
-                dict of {lec num->(lecture days, start, end,
-                          {rec_lett->(rec. day, start, end)})}
-                e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
-            course_number (str)
-      wake_up_time: earliest class time
-      consistent_lunchtime: Should there be a consistent break in the middle of
-        the day?
-      end_time: latest class end time
-      min_units, max_units: minimum and maximum number of units, respectively
-
-   Returns list of lists of (course_num, lec_num, recitation). e.g.
-   [[("15251", "1", "A"), ("15213", "2", "G"), ("80100", "1", "C")],
-    [("15251", "1", "A"), ("15213", "2", "G"), ("76101", "1", "AA"), ("80180", "2", "D")]
-    ]
-  """
-  pass
-
-
-@app.route("/api/save_schedule", methods=["GET", "POST"])
+@app.route("/api/save_schedule", methods=["POST"])
 def save_schedule():
   """Save a created schedule to the database"""
   pass
