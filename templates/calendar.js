@@ -69,31 +69,36 @@ var test_calendar_weekend = [
 ];
 
 var test_calendar_start_conflict = [
-    { course: "Something",
+    { course: "00-000 CC",
       start: 20,
       length: 3,
       days: "F" },
-    { course: "Naptime",
+    { course: "99-999 AA",
       start: 20,
       length: 10,
-      days: "MWF" }
+      days: "MWF" },
+    { course: "11-111 QQ",
+      start: 20,
+      length: 5,
+      days: "F" }
 ];
 
 var test_calendar_mid_conflict = [
-    { course: "Something",
+    { course: "18-100 A",
       start: 17,
       length: 4,
       days: "F" },
-    { course: "Something Else",
+    { course: "18-100 B",
       start: 18,
       length: 4,
       days: "F" },
-    { course: "Naptime",
+    { course: "99-999 W",
       start: 20,
       length: 10,
       days: "MWF" }
 ];
 
+var DEFAULT_START = 17, DEFAULT_END = 34;
 function find_range(courses) {
     var min_start = null, max_end = null, sunday = false, saturday = false;
     for (var i = 0, j = courses.length; i < j; i++) {
@@ -111,7 +116,8 @@ function find_range(courses) {
             saturday = true;
         }
     }
-    return { start: min_start, end: max_end,
+    return { start: Math.min(DEFAULT_START, min_start),
+             end: Math.max(DEFAULT_END, max_end),
              days: (sunday ? "U" : "") + "MTWHF" + (saturday ? "S" : "") };
 }
 
@@ -127,37 +133,55 @@ function draw_grid(canvas, ctx, bounds) {
     var num_hori = bounds.end - bounds.start + 1;
 
     // First, draw vertical course lines and labels
+    ctx.strokeStyle = "rgb(100,100,100)";
     ctx.beginPath();
+    ctx.fillStyle = "rgb(50,50,50)";
     for (var i = 1; i < num_vert; i++) {
-        ctx.fillStyle = "rgb(150,150,150)";
         ctx.moveTo(width * i, 0);
         ctx.lineTo(width * i, canvas.height);
-        ctx.fillStyle = "rgb(50,50,50)";
         ctx.fillText(bounds.days.charAt(i - 1), width * i + 1, 1);
-    }
-
-    // Then, draw vertical course lines and labels
-    for (i = 1; i < num_hori; i++) {
-        ctx.fillStyle = "rgb(150,150,150)";
-        ctx.moveTo(0, height * i);
-        ctx.lineTo(canvas.width, height * i);
-        ctx.fillStyle = "rgb(50,50,50)";
-        ctx.fillText(time_to_string(bounds.start + i), 1, height * i + 1);
     }
     ctx.closePath();
     ctx.stroke();
+
+    // Then, draw horizontal course lines and labels
+    for (i = 1; i < num_hori; i++) {
+        if ((i % 2) === 1) {
+            ctx.strokeStyle = "rgb(100,100,100)";
+        }
+        else {
+            ctx.strokeStyle = "rgb(200,200,200)";
+        }
+        ctx.beginPath();
+        ctx.moveTo(0, height * i);
+        ctx.lineTo(canvas.width, height * i);
+        ctx.fillText(time_to_string(bounds.start + i), 1, height * i + 1);
+        ctx.closePath();
+        ctx.stroke();
+    }
 }
 
 var CFL_SCALE = 10;
-function draw_course(canvas, ctx, course, bounds, cfl_idx, cfl_total) {
+function draw_course(canvas, ctx, course, bounds,
+                     cfl_idx, cfl_total, same_start) {
     for (var idx = 0, days = course.days.length; idx < days; idx++) {
         // Draw a different rectangle for each day
         var rect_idx = bounds.days.search(course.days.charAt(idx));
         var cfl_frac = cfl_total / CFL_SCALE;
-        var width = bounds.width - bounds.width * cfl_frac;
+        if (!same_start) {
+            var width = bounds.width - bounds.width * cfl_frac;
+        }
+        else {
+            var width = bounds.width / (cfl_total + 1);
+        }
         var height = course.length * bounds.height;
-        var x = (rect_idx + 1) * bounds.width +
-            (cfl_idx * bounds.width * cfl_frac);
+        if (!same_start) {
+            var x = (rect_idx + 1) * bounds.width +
+                (cfl_idx * bounds.width * cfl_frac);
+        }
+        else {
+            var x = (rect_idx + 1) * bounds.width + (width * cfl_idx);
+        }
         var y = (course.start - bounds.start + 1) * bounds.height;
 
         // Add text for each day as well
@@ -169,7 +193,7 @@ function draw_course(canvas, ctx, course, bounds, cfl_idx, cfl_total) {
         // Line wrapping. Overflows with long single words :( fix that...
         // @TODO: Fix this
         if (text_width >= width - 1) {
-            var words = course.course.split(" ");
+            var words = course.course.split(/\-| /);
             for (var i = 0, j = words.length; i < j; i++) {
                 ctx.fillText(words[i], x + 1, y + 1 +
                              (bounds.text_height * i));
@@ -203,16 +227,20 @@ function draw_courses(canvas, ctx, courses, bounds) {
                          blue_color.toString() + ", 0.8)");
 
         // Detect conflicts with other courses
-        var cfl_idx = 0, cfl_total = 0;
+        var cfl_idx = 0, cfl_total = 0, same_start = false;;
         for (var k = 0, h = courses.length; k < h; k++) {
             if (k !== i && is_conflict(courses[i], courses[k])) {
                 if (k < i) {
                     cfl_idx++;
                 }
+                if (courses[i].start === courses[k].start) {
+                    same_start = true;
+                }
                 cfl_total++;
             }
         }
-        draw_course(canvas, ctx, courses[i], bounds, cfl_idx, cfl_total);
+        draw_course(canvas, ctx, courses[i], bounds,
+                    cfl_idx, cfl_total, same_start);
     }
 }
 
@@ -254,7 +282,7 @@ function draw() {
         return;
     }
     var ctx = canvas.getContext("2d");
-    var courses = courses_to_events(test_calendar_normal);
+    var courses = courses_to_events(test_calendar_start_conflict);
 
     // Compute data needed to draw the scale and whatnot.
     var bounds = find_range(courses);
