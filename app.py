@@ -1,5 +1,4 @@
-from flask import Flask, request, session, render_template, redirect, url_for, g
-from json import dumps as tojson
+from flask import Flask, request, session, render_template, redirect, url_for, g, jsonify
 from hashlib import sha1
 from uuid import uuid4 as uuid
 import MySQLdb
@@ -53,9 +52,9 @@ def search_q():
   results = {}
   result_counts = {}
   c = g.db.cursor()
-  if name_query is not None and name_query is not '':
+  if name_query is not None and name_query != '':
     do_search(c, "name", name_query, results, result_counts)
-  if desc_query is not None and desc_query is not '':
+  if desc_query is not None and desc_query != '':
     do_search(c, "description", desc_query, results, result_counts)
   sorted_results = sorted(result_counts.iteritems(), key=operator.itemgetter(1))
   sorted_results = [a for (a,b) in sorted_results]
@@ -87,8 +86,8 @@ def search():
   for cnum in sorted_results:
     num, dept, name = results[cnum]
     newresults +=  [{'num': num, 'dept': dept, 'name': name}]
-  results = list(reversed(newresults))
-  return tojson(results)
+  results = { 'results': list(reversed(newresults)) }
+  return jsonify(**results)
 
 @app.route("/dept/<dept>/")
 def get_classes_by_dept(dept):
@@ -139,8 +138,8 @@ def get_class(num):
   else:
     return render_template("class_failed.html", num=num)
 
-@app.route("/api/info/<course_num>")
-def info(course_num):
+@app.route("/api/info/<int:num>/")
+def info(num):
   """Get info about the given course"""
   z = get_class_from_db(num)
   if z is not None:
@@ -160,7 +159,7 @@ def info(course_num):
     c['lectures'] = newlectures
   else:
     c = {}
-  return tojson(c)
+  return jsonify(**c)
 
 def gen_schedule(classes, start_time, consistent_lunchtime, end_time, min_units, max_units):
   """
@@ -194,7 +193,7 @@ def schedule():
   min_units = request.form.get('min_units', 36)
   max_units = request.form.get('max_units', 70)
   res = gen_schedule(potential_classes, wake_up_time, lunchtime, end_time, min_units, max_units)
-  return tojson(res)
+  return jsonify(**res)
 
 @app.route("/login/", methods=["GET", "POST"])
 def login():
