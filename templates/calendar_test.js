@@ -95,3 +95,30 @@ var test_calendar_mid_conflict = [
       length: 10,
       days: "MWF" }
 ];
+
+var test_calendar_both_conflict = [
+    { course: "18-100 A",
+      start: 17,
+      length: 4,
+      days: "F" },
+    { course: "18-100 B",
+      start: 18,
+      length: 4,
+      days: "F" },
+    { course: "99-999 W",
+      start: 20,
+      length: 10,
+      days: "MWF" },
+    { course: "00-000 CC",
+      start: 20,
+      length: 3,
+      days: "T" },
+    { course: "99-999 AA",
+      start: 20,
+      length: 10,
+      days: "TH" },
+    { course: "11-111 QQ",
+      start: 20,
+      length: 5,
+      days: "T" }
+];

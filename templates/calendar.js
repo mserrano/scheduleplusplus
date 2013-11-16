@@ -1,5 +1,27 @@
 "use strict";
 
+// Stolen from http://stackoverflow.com/q/55677
+// Returns the position of the mouse click on the canvas.
+function relMouseCoords(event){
+    var totalOffsetX = 0;
+    var totalOffsetY = 0;
+    var canvasX = 0;
+    var canvasY = 0;
+    var currentElement = this;
+
+    do{
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+    }
+    while(currentElement = currentElement.offsetParent)
+
+    canvasX = event.pageX - totalOffsetX - document.body.scrollLeft;
+    canvasY = event.pageY - totalOffsetY - document.body.scrollTop;
+
+    return {x:canvasX, y:canvasY}
+}
+HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
 var DEFAULT_START = 17, DEFAULT_END = 34;
 function find_range(courses) {
     var min_start = null, max_end = null, sunday = false, saturday = false;
@@ -65,47 +87,52 @@ function draw_grid(canvas, ctx, bounds) {
 
 var CFL_SCALE = 10;
 function draw_course(canvas, ctx, course, bounds,
-                     cfl_idx, cfl_total, same_start) {
-    for (var idx = 0, days = course.days.length; idx < days; idx++) {
-        // Draw a different rectangle for each day
-        var rect_idx = bounds.days.search(course.days.charAt(idx));
-        var cfl_frac = cfl_total / CFL_SCALE;
-        if (!same_start) {
-            var width = bounds.width - bounds.width * cfl_frac;
-        }
-        else {
-            var width = bounds.width / (cfl_total + 1);
-        }
-        var height = course.length * bounds.height;
-        if (!same_start) {
-            var x = (rect_idx + 1) * bounds.width +
-                (cfl_idx * bounds.width * cfl_frac);
-        }
-        else {
-            var x = (rect_idx + 1) * bounds.width + (width * cfl_idx);
-        }
-        var y = (course.start - bounds.start + 1) * bounds.height;
-
-        // Add text for each day as well
-        ctx.fillRect(x, y, width, height);
-        var rect_color = ctx.fillStyle;
-        ctx.fillStyle = "rgb(0,0,0)";
-        var text_width = ctx.measureText(course.course).width;
-
-        // Line wrapping. Overflows with long single words :( fix that...
-        // @TODO: Fix this
-        if (text_width >= width - 1) {
-            var words = course.course.split(/\-| /);
-            for (var i = 0, j = words.length; i < j; i++) {
-                ctx.fillText(words[i], x + 1, y + 1 +
-                             (bounds.text_height * i));
-            }
-        }
-        else {
-            ctx.fillText(course.course, x + 1, y + 1);
-        }
-        ctx.fillStyle = rect_color;
+                     cfl_idx, cfl_total, same_start)
+// cfl_total: total number of conflicts occurred with course
+// cfl_idx: conflict number for this course
+// same_start: true if the conflicts start at the same time
+{
+    if (course.days.length !== 1) {
+        console.log("Error! Course has not been split correctly");
     }
+    var rect_idx = bounds.days.search(course.days);
+    var cfl_frac = cfl_total / CFL_SCALE;
+    if (!same_start) {
+        var width = bounds.width - bounds.width * cfl_frac;
+    }
+    else {
+        var width = bounds.width / (cfl_total + 1);
+    }
+    var height = course.length * bounds.height;
+    if (!same_start) {
+        var x = (rect_idx + 1) * bounds.width +
+            (cfl_idx * bounds.width * cfl_frac);
+    }
+    else {
+        var x = (rect_idx + 1) * bounds.width + (width * cfl_idx);
+    }
+    var y = (course.start - bounds.start + 1) * bounds.height;
+
+    // Add text for each day as well
+    ctx.fillRect(x, y, width, height);
+    var rect_color = ctx.fillStyle;
+    ctx.fillStyle = "rgb(0,0,0)";
+    var text_width = ctx.measureText(course.course).width;
+
+    // Line wrapping. Overflows with long single words :( fix that...
+    // @TODO: Fix this
+    if (text_width >= width - 1) {
+        var words = course.course.split(/\-| /);
+        for (var i = 0, j = words.length; i < j; i++) {
+            ctx.fillText(words[i], x + 1, y + 1 +
+                         (bounds.text_height * i));
+        }
+    }
+    else {
+        ctx.fillText(course.course, x + 1, y + 1);
+    }
+    ctx.fillStyle = rect_color;
+    return {x: x, y: y, h: height, w: width};
 }
 
 function is_conflict(e1, e2) {
@@ -122,6 +149,7 @@ function is_conflict(e1, e2) {
 }
 
 function draw_courses(canvas, ctx, courses, bounds) {
+    var course_locations = [];
     for (var i = 0, j = courses.length; i < j; i++) {
         var blue_color = Math.floor(((200 / j) * courses[i].id) + 50);
         var green_color = Math.floor(50 * (courses[i].id % 3) + 50);
@@ -141,9 +169,11 @@ function draw_courses(canvas, ctx, courses, bounds) {
                 cfl_total++;
             }
         }
-        draw_course(canvas, ctx, courses[i], bounds,
-                    cfl_idx, cfl_total, same_start);
+        var loc = draw_course(canvas, ctx, courses[i], bounds,
+                              cfl_idx, cfl_total, same_start);
+        course_locations.push({course: courses[i], loc: loc});
     }
+    return course_locations;
 }
 
 function courses_to_events(courses)
@@ -177,7 +207,28 @@ function find_events(events, day, time) {
     return found;
 }
 
-function draw(courses) {
+function click_handler(canvas, course_locs, e)
+// Event handler for mouse clicks on the canvas.
+{
+    var coords = canvas.relMouseCoords(e);
+    var clicked_on = [];
+    for (var i = 0, j = course_locs.length; i < j; i++) {
+        var loc = course_locs[i].loc;
+        if (coords.x >= loc.x && coords.x <= loc.x + loc.w &&
+            coords.y >= loc.y && coords.y <= loc.y + loc.h) {
+            clicked_on.push(course_locs[i].course);
+        }
+    }
+    //@TODO: Something interactive and cool here.
+    console.log("Clicked on course(s):", JSON.stringify(clicked_on));
+}
+
+function draw(courses)
+// Takes a JSON object representing the course schedule and draws the
+// calendar.
+{
+    // Uncomment for testing
+    //courses = test_calendar_both_conflict;
     var canvas = document.getElementById("calendar");
     if (!canvas.getContext) {
         console.log("Canvas unsupported in browser!");
@@ -209,5 +260,10 @@ function draw(courses) {
 
     // Then, draw courses
     console.log("Drawing courses");
-    draw_courses(canvas, ctx, courses, bounds);
+    var course_locs = draw_courses(canvas, ctx, courses, bounds);
+
+    // Finally, install event handler
+    canvas.addEventListener('click',
+                            click_handler.bind(null, canvas, course_locs),
+                            false);
 }
