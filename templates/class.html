@@ -10,7 +10,7 @@
     <div class="container">
       <div class="row">
         <div class="panel">
-          <div class="panel-heading"><h3 class="panel-title">Course {{ num }} - {{ name }} </h3> </div>
+          <div class="panel-heading"><h3 class="panel-title">Course {{ num }} - {{ name }} ({{units}} units)</h3> </div>
           <p> {{ desc }} </p>
           <p>Prerequisites: {{ pre|repclasses|safe }}</p>
           <p>Corequisites: {{ co|repclasses|safe }}</p>
@@ -19,7 +19,7 @@
       {% if lecs|length > 0 %}
       <div class="row">
         <div class="panel">
-          <div class="panel-heading"><h3 class="panel-title">Sections</h3> </div>
+          <div class="panel-heading"><h3 class="panel-title">Sections for Spring 2014</h3> </div>
           <table class="table">
             <tr><th>Section</th><th>Instructors</th><th>Days</th><th>Time</th><th>Location</th></tr>
             {% for lec in lecs %}
@@ -31,6 +31,8 @@
           </table>
         </div>
       </div>
+      {% else %}
+        Not offered in Spring 2014!
       {% endif %}
     </div>
   </body>
