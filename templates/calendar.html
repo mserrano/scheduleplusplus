@@ -59,14 +59,14 @@
             <tbody>
               <!--
               TEMPLATED VERSION:
-              {% for tab in subSchedules %}
-                <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab={{tab.number}}">{{ tab.name }}</a></center></th></tr>
+              {% for sched in subSchedules %}
+                <tr><th><center><a class="btn btn-link btn-small" type="button" href="#" onclick="draw({{ sched.name }});"></a></center></th></tr>
               {% endfor %}
 
               PLACEHOLDER: -->
-              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=1">Skedg1</a></center></th></tr>
-              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=2">Skedg2</a></center></th></tr>
-              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#tab=3">Fall 13</a></center></th></tr>
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#" onclick="draw(test_calendar_normal);">Skedg1</a></center></th></tr>
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#" onclick="draw(test_calendar_both_conflict);">Skedg2</a></center></th></tr>
+              <tr><th><center><a class="btn btn-link btn-small" type="button" href="#">Fall 13</a></center></th></tr>
             </tbody>
           </table>
         </div>
@@ -76,7 +76,7 @@
           <canvas id="calendar" width="700" height="500">
             Fallback for old browsers goes here
           </canvas>
-          </p>
+          </p>/
         </div>
 
         <div class="span2" id="courseList">

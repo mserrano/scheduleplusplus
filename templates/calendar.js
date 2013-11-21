@@ -150,12 +150,33 @@ function is_conflict(e1, e2) {
 
 function draw_courses(canvas, ctx, courses, bounds) {
     var course_locations = [];
+    var colors = ["rgba(48,  88,  252,0.8)"
+                 ,"rgba(228, 90,  9  ,0.8)"
+                 ,"rgba(71,  205, 51 ,0.8)"
+                 ,"rgba(128, 102, 197,0.8)"
+                 ,"rgba(158, 243, 44 ,0.8)"
+                 ,"rgba(221, 57,  187,0.8)"
+                 ,"rgba(231, 172, 33 ,0.8)"
+                 ,"rgba(240, 51,  58 ,0.8)"
+                 ,"rgba(165, 248, 64 ,0.8)"
+                 ,"rgba(32,  104, 220,0.8)"
+                 ,"rgba(244, 122, 57 ,0.8)"
+                 ,"rgba(135, 173, 51 ,0.8)"
+                 ,"rgba(96,  150, 197,0.8)"
+                 ,"rgba(190, 243, 108,0.8)"
+                 ,"rgba(173, 121, 187,0.8)"
+                 ,"rgba(231, 140, 129,0.8)"
+                 ,"rgba(208, 35,  106,0.8)"
+                 ,"rgba(133, 255, 80 ,0.8)"
+                 ]
     for (var i = 0, j = courses.length; i < j; i++) {
-        var blue_color = Math.floor(((200 / j) * courses[i].id) + 50);
-        var green_color = Math.floor(50 * (courses[i].id % 3) + 50);
-        ctx.fillStyle = ("rgba(0, " + green_color.toString() + ", " +
-                         blue_color.toString() + ", 0.8)");
+        //var blue_color = Math.floor(((200 / j) * courses[i].id) + 50);
+        //var green_color = Math.floor(50 * (courses[i].id % 3) + 50);
+        //ctx.fillStyle = ("rgba(0, " + green_color.toString() + ", " +
+        //                 blue_color.toString() + ", 0.8)");
+        
 
+        ctx.fillStyle = colors[i % colors.length];
         // Detect conflicts with other courses
         var cfl_idx = 0, cfl_total = 0, same_start = false;;
         for (var k = 0, h = courses.length; k < h; k++) {
