@@ -42,7 +42,7 @@ function find_range(courses) {
     }
     return { start: Math.min(DEFAULT_START, min_start),
              end: Math.max(DEFAULT_END, max_end),
-             days: (sunday ? "U" : "") + "MTWHF" + (saturday ? "S" : "") };
+             days: (sunday ? "U" : "") + "MTWRF" + (saturday ? "S" : "") };
 }
 
 function time_to_string(d) {
