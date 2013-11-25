@@ -51,6 +51,7 @@ def make_sched():
   if request.method == 'POST':
     userid = session['user'][0]
     name = request.form['name']
+    scheduling_mode = request.form['schedMode']
     # semester = request.form['semester']
     c = g.db.cursor()
     c.execute("SELECT 1 FROM schedules WHERE name=%s AND user=%s",
