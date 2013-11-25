@@ -37,8 +37,12 @@ def schedules():
   c = g.db.cursor()
   c.execute("SELECT id, name FROM schedules WHERE user=%s", i)
   rows = c.fetchall()
+  schedule_contents = []
+  for row in rows:
+    c.execute("SELECT cnum FROM schedule_entries WHERE id=%s", rows[0])
+    schedule_contents += [row[0], row[1], c.fetchall()]
   c.close()
-  return render_template("schedules.html", schedules=rows)
+  return render_template("schedules.html", schedules=schedule_contents)
 
 @app.route("/make_schedule/", methods=["GET","POST"])
 def make_sched():
