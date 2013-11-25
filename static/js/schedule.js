@@ -25,8 +25,12 @@ HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
 var DEFAULT_START = 17, DEFAULT_END = 34;
 function find_range(courses) {
     var min_start = null, max_end = null, sunday = false, saturday = false;
-    for (var i = 0, j = courses.length; i < j; i++) {
-        var course = courses[i];
+    // Flatten the list of courses
+    var courses_flat = [];
+    courses_flat = courses_flat.concat.apply(courses_flat, courses);
+    console.log(courses_flat);
+    for (var i = 0, j = courses_flat.length; i < j; i++) {
+        var course = courses_flat[i];
         if (min_start === null || course.start < min_start) {
             min_start = course.start;
         }
@@ -169,41 +173,53 @@ function draw_courses(canvas, ctx, courses, bounds) {
                  ,"rgba(208, 35,  106,0.8)"
                  ,"rgba(133, 255, 80 ,0.8)"
                  ]
+    // Flatten the list of courses
+    var courses_flat = [];
+    courses_flat = courses_flat.concat.apply(courses_flat, courses);
+    
+    // For each course (group of events)...
     for (var i = 0, j = courses.length; i < j; i++) {
         //var blue_color = Math.floor(((200 / j) * courses[i].id) + 50);
         //var green_color = Math.floor(50 * (courses[i].id % 3) + 50);
         //ctx.fillStyle = ("rgba(0, " + green_color.toString() + ", " +
         //                 blue_color.toString() + ", 0.8)");
         
-
+        // Keep the same color for all of a course's sections
         ctx.fillStyle = colors[i % colors.length];
+
         // Detect conflicts with other courses
-        var cfl_idx = 0, cfl_total = 0, same_start = false;;
-        for (var k = 0, h = courses.length; k < h; k++) {
-            if (k !== i && is_conflict(courses[i], courses[k])) {
-                if (k < i) {
-                    cfl_idx++;
+        // For each event therein...
+        for (var l = 0, m = courses[i].length; l < m; l++) {
+            var cfl_idx = 0, cfl_total = 0, same_start = false;
+            for (var k = 0, h = courses_flat.length; k < h; k++) {
+                if (courses[i][l] !== courses_flat[k] 
+                    && is_conflict(courses[i][l], courses_flat[k])) {
+                    if (k < i) {
+                        cfl_idx++;
+                    }
+                    if (courses[i][l].start === courses_flat[k].start) {
+                        same_start = true;
+                    }
+                    cfl_total++;
                 }
-                if (courses[i].start === courses[k].start) {
-                    same_start = true;
-                }
-                cfl_total++;
             }
+            var loc = draw_course(canvas, ctx, courses[i][l], bounds,
+                                  cfl_idx, cfl_total, same_start);
+            course_locations.push({course: courses[i][l], loc: loc});
         }
-        var loc = draw_course(canvas, ctx, courses[i], bounds,
-                              cfl_idx, cfl_total, same_start);
-        course_locations.push({course: courses[i], loc: loc});
     }
     return course_locations;
 }
 
 function courses_to_events(courses)
 // Converts a list of courses that span multiple days to a list
-// of events that occur at most once.
+// of events that occur at most once. Results in a list of lists of events, 
+// where each sublist represents a course.
 // For example, splits a MWF course into 3 events, one for each day.
 {
-    var events = [];
+    var split_courses = [];
     for (var i = 0, j = courses.length; i < j; i++) {
+        var events = [];
         var course = courses[i];
         for (var k = 0; k < course.days.length; k++) {
             events.push({ course: course.course,
@@ -212,8 +228,9 @@ function courses_to_events(courses)
                           days: course.days.charAt(k),
                           id: i });
         }
+        split_courses.push(events);
     }
-    return events;
+    return split_courses;
 }
 
 function find_events(events, day, time) {
