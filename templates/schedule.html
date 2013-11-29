@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }}</title>
+    {% include "bootstrap.html" %}
+    <script type="text/javascript">var calendar = {{ schedule|tojson|safe }};</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/schedule.js') }}"></script>
+    {% if has_edit %}
+    <script type="text/javascript">var sched_num = {{ num }};</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/with_edit.js') }}"></script>
+    {% endif %}
+  </head>
+  <body onload="draw(calendar);">
+    {% include "nav.html" %}
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">{{ name }}</h3></div>
+          <div class="row">
+            <div class="col-lg-8 col-md-8" id="calendarContainer">
+              <p>
+                <canvas id="calendar" width="800" height="500">
+                  Fallback for old browsers goes here
+                </canvas>
+              </p>
+            </div>
+            <div class="col-md=1 col-lg-1"></div>
+            <div class="col-md-3 col-lg-3" id="courseList">
+              {% if has_edit %}
+              <p>
+                Add a course:<br />
+                <form name="course_add" onsubmit="doSearch(this); return false;" action="" method="GET">
+                  Course number: <input type="text" name="cnum" value="" /><br />
+                  <input type="button" name="button" value="Add Course" onclick="doSearch(this.form);" />
+                </form>
+              </p>
+              {% endif %}
+              {% for course in courses %}
+              <p><a href="/class/{{ course[0] }}/">{{course[0]}} {{ course[1] }}</a>{% if has_edit %} <a href="#" onclick="removeCourse({{ course[0] }})">(Remove)</a>{% endif %}</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

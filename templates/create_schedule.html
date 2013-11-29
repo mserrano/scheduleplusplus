@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Create Schedule</title>
+    {% include "bootstrap.html" %}
+  </head>
+  <body>
+    {% include "nav.html" %}
+
+    <div class="container">
+      <div class="row">
+        <div class="panel">
+          <div class="panel-heading"><h3 class="panel-title">Create Schedule</h3></div>
+          <form action="/make_schedule/" method="post">
+            <div class="form-group">
+              <label for="scheduleName">Schedule Name</label>
+              <input type="text" name="name" id="scheduleName" />
+            </div>
+            <div class="form-group">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="schedMode" id="schedMode1" value="manual" checked>
+                  Manual mode&mdash;Select courses and sections manually
+                </label>
+              </div> 
+              <div class="radio">
+                <label>
+                  <input type="radio" name="schedMode" id="schedMode2" value="auto" checked>
+                  Automatic mode&mdash;Supply a prioritized list of courses and optimize
+                </label>
+              </div> 
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+
