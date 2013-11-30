@@ -1,5 +1,20 @@
 import itertools
 
+class Class(object):
+  def __init__(self, unit_count, meeting_times, course_number, priority):
+    """
+    Args: unit_count: <int> number of units
+          meeting_times: dict of {lec num->(lecture days, start, end,
+                          {rec_lett->(rec. day, start, end)})}
+                e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
+          course_number: <str> e.g "15151"
+          priority: <float>. Infinite if mandatory.  """
+    self.unit_count = unit_count
+    self.meeting_times = meeting_times
+    self.course_number = course_number
+    self.priority = priority
+
+
 def gen_schedule(potential_classes,
                  wake_up_time=600,
                  end_time=2300,
@@ -7,15 +22,7 @@ def gen_schedule(potential_classes,
                  max_units=70):
   """
   Args:
-      potential_classes: list of classes
-        Each class should be an object containing fields:
-            unit_count    (number)
-            meeting_times
-                dict of {lec num->(lecture days, start, end,
-                          {rec_lett->(rec. day, start, end)})}
-                e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
-            course_number (str)
-            priority (float). infinite if mandatory
+      potential_classes: list of Class objects (as defined above)
       wake_up_time: earliest class time
       end_time: latest class end time
       min_units, max_units: minimum and maximum number of units, respectively
