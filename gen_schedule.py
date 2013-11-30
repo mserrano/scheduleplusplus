@@ -1,6 +1,6 @@
 import itertools
 
-class Class(object):
+class Course(object):
   def __init__(self, unit_count, meeting_times, course_number, priority):
     """
     Args: unit_count: <int> number of units
@@ -22,7 +22,7 @@ def gen_schedule(potential_classes,
                  max_units=70):
   """
   Args:
-      potential_classes: list of Class objects (as defined above)
+      potential_classes: list of Course objects (as defined above)
       wake_up_time: earliest class time
       end_time: latest class end time
       min_units, max_units: minimum and maximum number of units, respectively
