@@ -8,7 +8,8 @@ class Course(object):
                           {rec_lett->(rec. day, start, end)})}
                 e.g. {1: ('TR', 1500, 1640, {'A': ('MW', 1330, 1420)})}
           course_number: <str> e.g "15151"
-          priority: <float>. Infinite if mandatory.  """
+          priority: <float>. Infinite if mandatory.
+    """
     self.unit_count = unit_count
     self.meeting_times = meeting_times
     self.course_number = course_number
@@ -85,20 +86,21 @@ def gen_schedule(potential_classes,
   class_combos = powerset(possible_classes)
   # Get rid of the ones with bad unit totals
   def unit_count(sched):
-    return sum(cls.unit_count for cls in sched)
+    return sum(possible_classes[cls][0].unit_count for cls in sched)
+
   class_combos = (sched for sched in class_combos if
                   min_units <= unit_count(sched) <= max_units)
 
   def all_times(cls):
     """Given a course number, get all possible meeting times as list."""
     obj = possible_classes[cls][0]
-    lecture_based = [itertools.product(lec, obj.meeting_times[lec][3].keys())
-        for lec in obj.meeting_times]
-    return sum(lecture_based, [])
+    return [(cls, lec, time) for lec in obj.meeting_times
+            for time in obj.meeting_times[lec][3]]
 
   # Add in recitations and lectures
-  possible_schedules = (itertools.product(all_times(cls) for cls in sched)
-                        for sched in class_combos)
+  possible_schedules = itertools.chain.from_iterable([
+    itertools.product(*(all_times(cls) for cls in sched))
+                        for sched in class_combos])
 
   def get_bitmap_idx(time):
     """Get the bit idx to add time to"""
@@ -118,7 +120,7 @@ def gen_schedule(potential_classes,
     applied if not. """
     cur = start
     while cur < end:
-      idx = get_idx(cur)
+      idx = get_bitmap_idx(cur)
       if n & (1 << idx):
         return False
       else:
@@ -136,6 +138,7 @@ def gen_schedule(potential_classes,
     # Each day is a bitmap of 30 minute blocks (so, 48 bits). Bit 0 is
     # 00:00, bit 1 is 00:30, etc.
     days = {"M": 0, "T": 0, "W": 0, "R": 0, "F": 0}
+
     for cls, lec, rec in sched:
       obj = possible_classes[cls][0]
       lec_days, start, end, rec_dict = obj.meeting_times[lec]
@@ -144,9 +147,9 @@ def gen_schedule(potential_classes,
         if res is False:
           return True  # Short-circuit
         days[day] = res
-      rec_days, start, end = rec_dict[rec]
+      rec_days, r_start, r_end = rec_dict[rec]
       for day in rec_days:
-        res = set_30_minutes(days[day], start, end)
+        res = set_30_minutes(days[day], r_start, r_end)
         if res is False:
           return True
         days[day] = res
@@ -158,10 +161,11 @@ def gen_schedule(potential_classes,
   # Sort by getting tuples of (num_infinities, sum of non-infinite values).
   # Prioritize for num_infinities.
   sorted_sched = sorted(possible_schedules,
-      key=(len(c for c, _, _ in possible_schedules
-               if possible_classes[c][0].priority == float('inf')),
-           sum(possible_classes[c][0].priority for c, _, _ in possible_schedules
-               if possible_classes[c][0].priority != float('inf'))
-          ))
+    key=lambda sched: (
+      len([c for c, _, _ in sched
+           if possible_classes[c][0].priority == float('inf')]),
+      sum(possible_classes[c][0].priority for c, _, _ in sched
+          if possible_classes[c][0].priority != float('inf'))
+    ))
   return sorted_sched
 
