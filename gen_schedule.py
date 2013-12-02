@@ -166,6 +166,6 @@ def gen_schedule(potential_classes,
            if possible_classes[c][0].priority == float('inf')]),
       sum(possible_classes[c][0].priority for c, _, _ in sched
           if possible_classes[c][0].priority != float('inf'))
-    ))
-  return sorted_sched
+    ), reverse=True)
+  return sorted_sched[:10]
 
